@@ -35,6 +35,7 @@ secrets.json
 # Environment / config secrets
 .env
 .env.*
+!.env.example
 appsettings.Local.json
 appsettings.*.local.json
 

@@ -4,6 +4,7 @@ using notX.Application.Interfaces;
 using notX.Application.Interfaces.Repositories;
 using notX.Infrastructure.Persistence.Connections;
 using notX.Infrastructure.Persistence.Repositories;
+using notX.Infrastructure.Settings;
 
 namespace notX.Infrastructure.DependencyInjection;
 
@@ -14,6 +15,9 @@ public static class InfrastructureServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddSingleton(configuration);
+
+        services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
+        services.Configure<TwilioSettings>(configuration.GetSection(TwilioSettings.SectionName));
 
         services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
