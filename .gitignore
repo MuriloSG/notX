@@ -1,0 +1,68 @@
+# Build output
+bin/
+obj/
+out/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/build/
+
+# Aspire / user secrets
+**/Properties/launchSettings.json
+**/.secrets/
+secrets.json
+
+# Environment / config secrets
+.env
+.env.*
+appsettings.Local.json
+appsettings.*.local.json
+
+# Logs
+*.log
+logs/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Rider / JetBrains
+*.DotSettings.user
+.idea/
+
+# VS Code
+.vscode/
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Docker override (local only)
+docker-compose.override.yml
+
+# Aspire dashboard certs (gerados localmente)
+**/.aspire/
