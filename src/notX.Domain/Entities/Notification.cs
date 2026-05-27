@@ -5,56 +5,41 @@ namespace notX.Domain.Entities;
 
 public class Notification : BaseEntity
 {
-    public Guid ApplicationId { get; private set; }
+    public Guid ApplicationId { get; internal set; }
+    public NotificationType Type { get; internal set; }
+    public string Title { get; internal set; } = default!;
+    public string Content { get; internal set; } = default!;
+    public NotificationStatus Status { get; internal set; }
+    public DateTime CreatedAt { get; internal set; }
+    public DateTime? ScheduledAt { get; internal set; }
+    public DateTime? SentAt { get; internal set; }
 
-    public NotificationType Type { get; private set; }
+    private Notification() { }
 
-    public string Recipient { get; private set; } = default!;
-
-    public string Subject { get; private set; } = default!;
-
-    public string Body { get; private set; } = default!;
-
-    public NotificationStatus Status { get; private set; }
-
-    public DateTime CreatedAt { get; private set; }
-
-    public DateTime? SentAt { get; private set; }
-
-    private Notification()
+    public static Notification Create(
+        Guid applicationId,
+        NotificationType type,
+        string title,
+        string content,
+        DateTime? scheduledAt = null) => new()
     {
-    }
+        Id = Guid.NewGuid(),
+        ApplicationId = applicationId,
+        Type = type,
+        Title = title,
+        Content = content,
+        Status = NotificationStatus.Pending,
+        CreatedAt = DateTime.UtcNow,
+        ScheduledAt = scheduledAt
+    };
 
-    public Notification(Guid applicationId, NotificationType type, string recipient, string subject, string body)
-    {
-        Id = Guid.NewGuid();
-        ApplicationId = applicationId;
-        Type = type;
-        Recipient = recipient;
-        Subject = subject;
-        Body = body;
-        Status = NotificationStatus.Pending;
-        CreatedAt = DateTime.UtcNow;
-    }
+    public bool CanCancel() => Status != NotificationStatus.Sent;
+    public bool CanRetry() => Status is NotificationStatus.Failed or NotificationStatus.Cancelled;
 
-    public void MarkAsProcessing()
-    {
-        Status = NotificationStatus.Processing;
-    }
+    public void Cancel() => Status = NotificationStatus.Cancelled;
+    public void Retry() => Status = NotificationStatus.Pending;
 
-    public void MarkAsSent()
-    {
-        Status = NotificationStatus.Sent;
-        SentAt = DateTime.UtcNow;
-    }
-
-    public void MarkAsFailed()
-    {
-        Status = NotificationStatus.Failed;
-    }
-
-    public void Cancel()
-    {
-        Status = NotificationStatus.Cancelled;
-    }
+    public void MarkAsProcessing() => Status = NotificationStatus.Processing;
+    public void MarkAsSent() { Status = NotificationStatus.Sent; SentAt = DateTime.UtcNow; }
+    public void MarkAsFailed() => Status = NotificationStatus.Failed;
 }

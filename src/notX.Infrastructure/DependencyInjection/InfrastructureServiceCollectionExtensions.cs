@@ -18,6 +18,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }
