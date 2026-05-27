@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using notX.Application.DependencyInjection;
 using notX.Application.Interfaces;
@@ -11,7 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -20,19 +27,21 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "notX API",
         Version = "v1",
-        Description = "Platform for sending notifications via Email, SMS, Push and Webhook."
+        Description = "Plataforma de envio de notificações via Email e SMS."
     });
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
 
+    options.UseInlineDefinitionsForEnums();
+
     options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
         Name = "X-Api-Key",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
-        Description = "Provide your application API key in the X-Api-Key header. Required for all /notifications endpoints."
+        Description = "Informe a API key da sua aplicação no header X-Api-Key. Obrigatório em todos os endpoints de /notifications."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement

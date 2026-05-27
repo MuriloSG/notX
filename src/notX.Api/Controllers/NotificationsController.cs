@@ -26,12 +26,12 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
     /// <remarks>
     /// Cria uma notificação com status <c>Pendente</c> e a enfileira para processamento via Outbox Pattern.
     ///
-    /// **Tipos suportados:** Email = 1, Sms = 2, Push = 3, Webhook = 4
+    /// **Tipos suportados:** `Email`, `Sms`
     ///
     /// **Exemplo de requisição:**
     /// ```json
     /// {
-    ///   "type": 1,
+    ///   "type": "Email",
     ///   "title": "Bem-vindo!",
     ///   "content": "Obrigado por se cadastrar.",
     ///   "scheduledAt": null
@@ -69,8 +69,8 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
     /// ```json
     /// {
     ///   "notifications": [
-    ///     { "type": 1, "title": "Olá", "content": "Mensagem 1" },
-    ///     { "type": 2, "title": "Alerta", "content": "Mensagem 2" }
+    ///     { "type": "Email", "title": "Olá", "content": "Mensagem 1" },
+    ///     { "type": "Sms",   "title": "Alerta", "content": "Mensagem 2" }
     ///   ]
     /// }
     /// ```
@@ -183,11 +183,11 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
     /// Retorna apenas as notificações pertencentes à aplicação autenticada.
     /// Todos os filtros são opcionais e podem ser combinados.
     ///
-    /// **Valores de NotificationType:** Email = 1, Sms = 2, Push = 3, Webhook = 4
+    /// **Valores de NotificationType:** `Email`, `Sms`
     ///
-    /// **Valores de NotificationStatus:** Pendente = 1, Processando = 2, Enviada = 3, Falhou = 4, Cancelada = 5
+    /// **Valores de NotificationStatus:** `Pending`, `Processing`, `Sent`, `Failed`, `Cancelled`
     ///
-    /// **Exemplo:** `GET /notifications?status=4&amp;page=1&amp;pageSize=20`
+    /// **Exemplo:** `GET /notifications?status=Failed&amp;page=1&amp;pageSize=20`
     /// </remarks>
     /// <param name="type">Filtrar por tipo de notificação (opcional).</param>
     /// <param name="status">Filtrar por status (opcional).</param>
