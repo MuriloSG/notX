@@ -1,5 +1,6 @@
 using System.Text;
 using Dapper;
+using notX.Application.Features.Notifications.DTOs;
 using notX.Application.Features.Notifications.Queries.GetNotifications;
 using notX.Application.Interfaces;
 using notX.Application.Interfaces.Repositories;
@@ -128,6 +129,73 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
         var totalCount = await multi.ReadFirstAsync<int>();
 
         return (items, totalCount);
+    }
+
+    public async Task<DashboardSnapshotDto> GetDashboardSnapshotAsync(Guid applicationId)
+    {
+        var since = DateTime.UtcNow.AddHours(-24);
+        var sql = $"""
+            SELECT status, COUNT(*) AS Count
+            FROM notifications
+            WHERE application_id = @ApplicationId
+            GROUP BY status;
+
+            SELECT type, COUNT(*) AS Count
+            FROM notifications
+            WHERE application_id = @ApplicationId
+            GROUP BY type;
+
+            SELECT date_trunc('hour', created_at) AS Hour, status, COUNT(*) AS Count
+            FROM notifications
+            WHERE application_id = @ApplicationId AND created_at >= @Since
+            GROUP BY Hour, status
+            ORDER BY Hour;
+
+            SELECT {NotificationColumns}
+            FROM notifications
+            WHERE application_id = @ApplicationId
+            ORDER BY created_at DESC
+            LIMIT 20;
+            """;
+
+        using var connection = connectionFactory.CreateConnection();
+        using var multi = await connection.QueryMultipleAsync(sql, new { ApplicationId = applicationId, Since = since });
+
+        var statusRows = await multi.ReadAsync<(int Status, int Count)>();
+        var typeRows = await multi.ReadAsync<(int Type, int Count)>();
+        var seriesRows = await multi.ReadAsync<(DateTime Hour, int Status, int Count)>();
+        var recent = (await multi.ReadAsync<Notification>()).ToList();
+
+        var statusCounts = statusRows.ToDictionary(r => (NotificationStatus)r.Status, r => r.Count);
+        var typeCounts = typeRows.ToDictionary(r => (NotificationType)r.Type, r => r.Count);
+
+        var status = new StatusCountsDto(
+            statusCounts.GetValueOrDefault(NotificationStatus.Pending),
+            statusCounts.GetValueOrDefault(NotificationStatus.Processing),
+            statusCounts.GetValueOrDefault(NotificationStatus.Sent),
+            statusCounts.GetValueOrDefault(NotificationStatus.Failed),
+            statusCounts.GetValueOrDefault(NotificationStatus.Cancelled));
+
+        var types = new TypeCountsDto(
+            typeCounts.GetValueOrDefault(NotificationType.Email),
+            typeCounts.GetValueOrDefault(NotificationType.Sms));
+
+        var denominator = status.Sent + status.Failed;
+        var successRate = denominator == 0 ? 0d : Math.Round((double)status.Sent / denominator * 100, 2);
+
+        var buckets = seriesRows
+            .GroupBy(r => r.Hour)
+            .Select(g => new TimeBucketDto(
+                g.Key,
+                g.Where(x => x.Status == (int)NotificationStatus.Sent).Sum(x => x.Count),
+                g.Where(x => x.Status == (int)NotificationStatus.Failed).Sum(x => x.Count)))
+            .ToList();
+
+        var recentDtos = recent.Select(n => new NotificationDto(
+            n.Id, n.ApplicationId, n.Type, n.Title, n.Content, n.Recipient,
+            n.Status, n.CreatedAt, n.ScheduledAt, n.SentAt)).ToList();
+
+        return new DashboardSnapshotDto(status, types, successRate, buckets, recentDtos);
     }
 
     private static object ToParams(Notification n) => new

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using notX.Api.Models;
+using notX.Api.Services;
 using notX.Application.Features.Notifications.Commands.CancelNotification;
 using notX.Application.Features.Notifications.Commands.CreateNotification;
 using notX.Application.Features.Notifications.Commands.CreateNotificationsBatch;
@@ -8,7 +9,9 @@ using notX.Application.Features.Notifications.Commands.RetryNotification;
 using notX.Application.Features.Notifications.DTOs;
 using notX.Application.Features.Notifications.Queries.GetNotifications;
 using notX.Domain.Enums;
+using notX.Infrastructure.Realtime;
 using notX.Shared.Results;
+using StackExchange.Redis;
 
 namespace notX.Api.Controllers;
 
@@ -20,7 +23,10 @@ namespace notX.Api.Controllers;
 [Route("notifications")]
 [Produces("application/json")]
 [Tags("Notificações")]
-public sealed class NotificationsController(IMediator mediator) : ControllerBase
+public sealed class NotificationsController(
+    IMediator mediator,
+    IConnectionMultiplexer redis,
+    CurrentApplication currentApplication) : ControllerBase
 {
     /// <summary>Criar uma notificação individual.</summary>
     /// <remarks>
@@ -56,6 +62,8 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
 
         if (result.IsFailure)
             return BadRequest(new ErrorResponse(result.Error.Code, result.Error.Message));
+
+        await DashboardEvents.PublishAsync(redis, currentApplication.ApplicationId, "notification.created", result.Value);
 
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
@@ -135,6 +143,9 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
             return BadRequest(new ErrorResponse(result.Error.Code, result.Error.Message));
         }
 
+        await DashboardEvents.PublishAsync(redis, currentApplication.ApplicationId, "notification.status_changed",
+            new { id, status = NotificationStatus.Cancelled.ToString() });
+
         return NoContent();
     }
 
@@ -174,6 +185,9 @@ public sealed class NotificationsController(IMediator mediator) : ControllerBase
 
             return BadRequest(new ErrorResponse(result.Error.Code, result.Error.Message));
         }
+
+        await DashboardEvents.PublishAsync(redis, currentApplication.ApplicationId, "notification.status_changed",
+            new { id, status = NotificationStatus.Pending.ToString() });
 
         return NoContent();
     }

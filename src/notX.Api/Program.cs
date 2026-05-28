@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using notX.Application.DependencyInjection;
 using notX.Application.Interfaces;
 using notX.Api.Middleware;
+using notX.Api.Realtime;
 using notX.Api.Services;
 using notX.Infrastructure.DependencyInjection;
 using notX.Infrastructure.Persistence.Extensions;
@@ -58,6 +59,8 @@ builder.Services.AddOpenApi(options =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddSingleton<SseConnectionLimiter>();
 
 builder.Services.AddScoped<CurrentApplication>();
 builder.Services.AddScoped<ICurrentApplication>(sp => sp.GetRequiredService<CurrentApplication>());

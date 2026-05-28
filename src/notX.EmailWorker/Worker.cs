@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using notX.Application.Interfaces;
 using notX.Application.Interfaces.Repositories;
 using notX.Domain.Enums;
+using notX.Infrastructure.Realtime;
 using StackExchange.Redis;
 
 namespace notX.EmailWorker;
@@ -128,6 +129,8 @@ public sealed class Worker(
                     notification.MarkAsSent();
                     await notificationRepo.UpdateStatusAsync(notification.Id, NotificationStatus.Sent, notification.SentAt);
                     await outboxRepo.MarkProcessedAsync(message.Id, stoppingToken);
+                    await DashboardEvents.PublishAsync(redis, notification.ApplicationId, "notification.status_changed",
+                        new { id = notification.Id, status = NotificationStatus.Sent.ToString(), sentAt = notification.SentAt });
                     logger.LogInformation("Notification {Id} sent successfully", notification.Id);
                 }
                 else
@@ -167,6 +170,8 @@ public sealed class Worker(
             {
                 notification.MarkAsFailed();
                 await notificationRepo.UpdateStatusAsync(notification.Id, NotificationStatus.Failed);
+                await DashboardEvents.PublishAsync(redis, notification.ApplicationId, "notification.status_changed",
+                    new { id = notification.Id, status = NotificationStatus.Failed.ToString(), error });
             }
 
             logger.LogWarning("Outbox message {OutboxId} esgotou {Retries} tentativas — marcado como finalizado",
