@@ -7,11 +7,92 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   <style>
     html, body { background: #0a0a0a; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .card { background: #111113; border: 1px solid #1f1f23; border-radius: 12px; }
     .scroll::-webkit-scrollbar { width: 8px; height: 8px; }
     .scroll::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+
+    /* Quill dark theme */
+    .ql-toolbar.ql-snow {
+      background: #18181b;
+      border: 1px solid #27272a !important;
+      border-bottom: none !important;
+      border-radius: 8px 8px 0 0;
+      padding: 8px;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+    .ql-container.ql-snow {
+      background: #09090b;
+      border: 1px solid #27272a !important;
+      border-radius: 0 0 8px 8px;
+      font-size: 14px;
+      min-height: 180px;
+    }
+    .ql-editor { min-height: 180px; color: #e4e4e7; line-height: 1.6; }
+    .ql-editor.ql-blank::before { color: #52525b; font-style: normal; }
+    .ql-snow .ql-stroke { stroke: #a1a1aa; }
+    .ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill { fill: #a1a1aa; }
+    .ql-snow .ql-picker { color: #a1a1aa; }
+    .ql-snow .ql-picker-options {
+      background: #18181b;
+      border: 1px solid #27272a !important;
+      border-radius: 6px;
+    }
+    .ql-snow .ql-picker-item { color: #e4e4e7; }
+    .ql-toolbar.ql-snow .ql-formats { margin-right: 8px; }
+    .ql-snow.ql-toolbar button:hover .ql-stroke,
+    .ql-snow .ql-toolbar button:hover .ql-stroke { stroke: #fff; }
+    .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: #fff; }
+    .ql-snow.ql-toolbar button:hover .ql-fill,
+    .ql-snow .ql-toolbar button:hover .ql-fill { fill: #fff; }
+    .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: #fff; }
+    .ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color: #27272a; }
+    .ql-snow .ql-picker-label { border-color: #27272a !important; border-radius: 4px; }
+    .ql-snow a { color: #60a5fa; }
+
+    /* Flatpickr dark */
+    .flatpickr-calendar {
+      background: #111113 !important;
+      border: 1px solid #27272a !important;
+      border-radius: 10px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+    }
+    .flatpickr-months { padding: 6px 0; }
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-current-month,
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year { color: #e4e4e7 !important; background: transparent !important; }
+    .flatpickr-months .flatpickr-prev-month svg,
+    .flatpickr-months .flatpickr-next-month svg { fill: #a1a1aa !important; }
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg { fill: #fff !important; }
+    .flatpickr-weekdays { background: transparent !important; }
+    span.flatpickr-weekday { color: #52525b !important; background: transparent !important; font-size: 11px; }
+    .flatpickr-day { color: #d4d4d8 !important; border-radius: 6px !important; }
+    .flatpickr-day:hover { background: #27272a !important; border-color: transparent !important; }
+    .flatpickr-day.selected, .flatpickr-day.selected:hover {
+      background: #fff !important; color: #000 !important; border-color: transparent !important;
+    }
+    .flatpickr-day.today { border-color: #52525b !important; }
+    .flatpickr-day.today:hover { background: #27272a !important; }
+    .flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay {
+      color: #3f3f46 !important;
+    }
+    .flatpickr-time { border-top: 1px solid #27272a !important; background: transparent !important; }
+    .flatpickr-time input, .flatpickr-time .flatpickr-am-pm { color: #e4e4e7 !important; background: transparent !important; }
+    .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:focus { background: #27272a !important; }
+    .flatpickr-time .arrowUp:after { border-bottom-color: #a1a1aa !important; }
+    .flatpickr-time .arrowDown:after { border-top-color: #a1a1aa !important; }
+    .numInputWrapper:hover { background: #27272a !important; }
+    .flatpickr-monthDropdown-months { background: #111113 !important; }
+    .flatpickr-monthDropdown-months option { background: #111113 !important; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -170,9 +251,14 @@
 
       <!-- NOTIFICATIONS TAB -->
       <div id="tab-notifications" class="tab-panel hidden">
-        <div>
-          <h3 class="text-2xl font-semibold mb-1">Notificações</h3>
-          <p class="text-sm text-zinc-500 mb-6">Lista completa com filtros e paginação</p>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h3 class="text-2xl font-semibold mb-1">Notificações</h3>
+            <p class="text-sm text-zinc-500">Lista completa com filtros e paginação</p>
+          </div>
+          <button id="btn-new-notif" class="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-200 transition">
+            <i data-lucide="plus" class="w-4 h-4"></i> Nova notificação
+          </button>
         </div>
 
         <div class="card p-4 mb-4 flex flex-wrap gap-3 items-center">
@@ -241,6 +327,107 @@
   </div>
   <div id="drawer-body" class="flex-1 overflow-auto scroll p-6"></div>
 </aside>
+
+<!-- CREATE NOTIFICATION MODAL -->
+<div id="create-overlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] items-center justify-center px-4">
+  <div class="card w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div class="px-6 py-4 border-b border-zinc-900 flex items-center justify-between shrink-0">
+      <h3 class="text-base font-semibold">Nova notificação</h3>
+      <div class="flex items-center gap-2">
+        <div class="flex bg-black border border-zinc-800 rounded-lg p-1 text-xs">
+          <button id="mode-single" class="px-3 py-1 rounded-md bg-zinc-800 text-white transition">Única</button>
+          <button id="mode-batch"  class="px-3 py-1 rounded-md text-zinc-400 transition">Lote</button>
+        </div>
+        <button id="create-close" class="w-8 h-8 rounded-lg hover:bg-zinc-900 flex items-center justify-center text-zinc-400">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto scroll p-6">
+      <!-- Single form -->
+      <div id="form-single">
+        <div class="grid grid-cols-2 gap-4">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Tipo</span>
+            <select id="s-type" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
+              <option value="Email">Email</option>
+              <option value="Sms">SMS</option>
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Destinatário</span>
+            <input id="s-recipient" type="text" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="email@exemplo.com" />
+          </label>
+          <label class="col-span-2 flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Título / Assunto</span>
+            <input id="s-title" type="text" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="Assunto do email ou título da mensagem" />
+          </label>
+          <!-- Email: rich editor -->
+          <div id="s-content-email" class="col-span-2 flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Conteúdo</span>
+            <div id="quill-editor"></div>
+          </div>
+          <!-- SMS: plain textarea -->
+          <label id="s-content-sms" class="col-span-2 flex flex-col gap-1 hidden">
+            <span class="text-xs text-zinc-400">Mensagem</span>
+            <textarea id="s-content-plain" rows="4" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm resize-none" placeholder="Texto da mensagem SMS"></textarea>
+            <span class="text-xs text-zinc-600" id="sms-count">0 / 160 chars</span>
+          </label>
+          <label class="col-span-2 flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Agendar para (opcional)</span>
+            <div class="relative">
+              <input id="s-scheduled" type="text" readonly
+                     class="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 pr-9 text-sm cursor-pointer focus:outline-none focus:border-zinc-600"
+                     placeholder="Selecione data e horário…" />
+              <button type="button" id="s-scheduled-clear"
+                      class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded flex items-center justify-center text-zinc-500 hover:text-white">
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Batch form -->
+      <div id="form-batch" class="hidden">
+        <div id="batch-rows" class="space-y-3"></div>
+        <button id="batch-add" class="mt-3 flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Adicionar linha
+        </button>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-zinc-900 flex items-center justify-between shrink-0">
+      <span id="create-feedback" class="text-sm text-zinc-500"></span>
+      <div class="flex gap-2">
+        <button id="create-cancel" class="px-4 py-2 rounded-lg border border-zinc-800 hover:bg-zinc-900 text-sm">Cancelar</button>
+        <button id="create-submit" class="px-4 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-zinc-200 transition flex items-center gap-2">
+          <i data-lucide="send" class="w-4 h-4"></i> Enviar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-overlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] items-center justify-center px-4">
+  <div class="card w-full max-w-md p-6">
+    <div class="flex items-start gap-4">
+      <div id="confirm-icon-wrap" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+        <i id="confirm-icon" data-lucide="alert-triangle" class="w-5 h-5"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 id="confirm-title" class="text-base font-semibold mb-1">Confirmar</h3>
+        <p id="confirm-message" class="text-sm text-zinc-400"></p>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-6">
+      <button id="confirm-cancel" class="px-4 py-2 rounded-lg border border-zinc-800 hover:bg-zinc-900 text-sm">Cancelar</button>
+      <button id="confirm-ok" class="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"></button>
+    </div>
+  </div>
+</div>
 
 <script>
   const STORAGE_KEY = "notx_api_key";
@@ -323,24 +510,39 @@
     initCharts();
     wireInteractions();
     connectSse();
+    activateTab(location.hash.replace(/^#/, "") || "dashboard");
     lucide.createIcons();
   }
 
-  // ---------- TABS ----------
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach(b => {
-        b.classList.remove("bg-zinc-900","text-white");
-        b.classList.add("text-zinc-400");
-      });
-      btn.classList.add("bg-zinc-900","text-white");
-      btn.classList.remove("text-zinc-400");
-      const tab = btn.dataset.tab;
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
-      $(`tab-${tab}`).classList.remove("hidden");
-      $("page-title").textContent = tab === "dashboard" ? "Dashboard" : "Notificações";
-      if (tab === "notifications") loadNotifications();
+  // ---------- TABS (com persistência via URL hash) ----------
+  const VALID_TABS = ["dashboard", "notifications"];
+  const TAB_TITLES = { dashboard: "Dashboard", notifications: "Notificações" };
+
+  function activateTab(tab) {
+    if (!VALID_TABS.includes(tab)) tab = "dashboard";
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      const active = b.dataset.tab === tab;
+      b.classList.toggle("bg-zinc-900", active);
+      b.classList.toggle("text-white", active);
+      b.classList.toggle("text-zinc-400", !active);
     });
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+    $(`tab-${tab}`).classList.remove("hidden");
+    $("page-title").textContent = TAB_TITLES[tab];
+    if (tab === "notifications") loadNotifications();
+  }
+
+  function setTab(tab) {
+    if (location.hash !== `#${tab}`) location.hash = tab;
+    else activateTab(tab); // mesmo hash → força ativação
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => setTab(btn.dataset.tab));
+  });
+
+  window.addEventListener("hashchange", () => {
+    activateTab(location.hash.replace(/^#/, "") || "dashboard");
   });
 
   // ---------- CHARTS ----------
@@ -568,10 +770,16 @@
         <td class="px-5 py-3 text-zinc-400">${fmt(n.createdAt)}</td>
         <td class="px-5 py-3">
           ${n.status === "Failed" || n.status === "Cancelled"
-            ? `<button data-action="retry" data-id="${n.id}" class="text-xs text-emerald-400 hover:underline">Reenviar</button>`
+            ? `<button data-action="retry" data-id="${n.id}" title="Reenviar"
+                       class="w-8 h-8 rounded-lg flex items-center justify-center text-emerald-400 hover:bg-emerald-500/10 transition">
+                 <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+               </button>`
             : n.status !== "Sent"
-              ? `<button data-action="cancel" data-id="${n.id}" class="text-xs text-red-400 hover:underline">Cancelar</button>`
-              : "—"}
+              ? `<button data-action="cancel" data-id="${n.id}" title="Cancelar"
+                         class="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-500/10 transition">
+                   <i data-lucide="x-circle" class="w-4 h-4"></i>
+                 </button>`
+              : `<span class="text-zinc-700">—</span>`}
         </td>
       </tr>`).join("");
     lucide.createIcons();
@@ -579,11 +787,8 @@
     document.querySelectorAll("#notif-body button[data-action]").forEach(b => {
       b.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const action = b.dataset.action;
-        await fetch(`/notifications/${b.dataset.id}/${action}`, {
-          method: "POST", headers: { "X-Api-Key": apiKey }
-        });
-        loadNotifications();
+        const ok = await performAction(b.dataset.action, b.dataset.id);
+        if (ok) loadNotifications();
       });
     });
     document.querySelectorAll(".notif-row").forEach(r => {
@@ -597,6 +802,71 @@
     const pageSize = parseInt($("f-page-size").value, 10);
     if (notifPage * pageSize < notifTotal) { notifPage++; loadNotifications(); }
   });
+
+  // ---------- CONFIRM MODAL ----------
+  function confirmDialog({ title, message, confirmText, confirmIcon = "check", tone = "danger" }) {
+    return new Promise(resolve => {
+      const overlay = $("confirm-overlay");
+      $("confirm-title").textContent = title;
+      $("confirm-message").textContent = message;
+
+      const tones = {
+        danger:  { wrap: "bg-red-500/10 text-red-400",     btn: "bg-red-500 hover:bg-red-600 text-white" },
+        success: { wrap: "bg-emerald-500/10 text-emerald-400", btn: "bg-emerald-500 hover:bg-emerald-600 text-white" },
+        warn:    { wrap: "bg-amber-500/10 text-amber-400", btn: "bg-amber-500 hover:bg-amber-600 text-black" }
+      };
+      const t = tones[tone] || tones.danger;
+      $("confirm-icon-wrap").className = `w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${t.wrap}`;
+      $("confirm-ok").className = `px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${t.btn}`;
+      $("confirm-ok").innerHTML = `<i data-lucide="${confirmIcon}" class="w-4 h-4"></i><span>${confirmText}</span>`;
+
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+      lucide.createIcons();
+
+      const cleanup = (result) => {
+        overlay.classList.add("hidden");
+        overlay.classList.remove("flex");
+        $("confirm-ok").onclick = null;
+        $("confirm-cancel").onclick = null;
+        overlay.onclick = null;
+        document.removeEventListener("keydown", onKey);
+        resolve(result);
+      };
+      const onKey = (e) => { if (e.key === "Escape") cleanup(false); if (e.key === "Enter") cleanup(true); };
+
+      $("confirm-ok").onclick = () => cleanup(true);
+      $("confirm-cancel").onclick = () => cleanup(false);
+      overlay.onclick = (e) => { if (e.target === overlay) cleanup(false); };
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  const ACTIONS = {
+    cancel: {
+      title: "Cancelar notificação",
+      message: "Tem certeza que deseja cancelar esta notificação? Ela não será enviada.",
+      confirmText: "Sim, cancelar",
+      confirmIcon: "x-circle",
+      tone: "danger"
+    },
+    retry: {
+      title: "Reenviar notificação",
+      message: "A notificação voltará para o estado Pendente e será processada novamente pelo worker.",
+      confirmText: "Sim, reenviar",
+      confirmIcon: "rotate-cw",
+      tone: "success"
+    }
+  };
+
+  async function performAction(action, id) {
+    const ok = await confirmDialog(ACTIONS[action]);
+    if (!ok) return false;
+    const res = await fetch(`/notifications/${id}/${action}`, {
+      method: "POST", headers: { "X-Api-Key": apiKey }
+    });
+    return res.ok;
+  }
 
   // ---------- DRAWER ----------
   function openDrawer(title, sub, html) {
@@ -687,10 +957,8 @@
 
     document.querySelectorAll(".det-action").forEach(b => {
       b.addEventListener("click", async () => {
-        await fetch(`/notifications/${b.dataset.id}/${b.dataset.action}`, {
-          method: "POST", headers: { "X-Api-Key": apiKey }
-        });
-        closeDrawer();
+        const ok = await performAction(b.dataset.action, b.dataset.id);
+        if (ok) closeDrawer();
       });
     });
   }
@@ -734,6 +1002,316 @@
     };
     chartTypes.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; };
   }
+
+  // ---------- CREATE NOTIFICATION MODAL ----------
+  let createMode = "single";
+  let quill = null;
+
+  function initQuill() {
+    if (quill) return;
+    quill = new Quill("#quill-editor", {
+      theme: "snow",
+      placeholder: "Escreva o conteúdo do email…",
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ color: [] }, { background: [] }],
+          [{ list: "ordered" }, { list: "bullet" }],
+          [{ indent: "-1" }, { indent: "+1" }],
+          [{ align: [] }],
+          ["link", "image"],
+          ["clean"]
+        ]
+      }
+    });
+  }
+
+  function updateSmsCount() {
+    const len = $("s-content-plain").value.length;
+    $("sms-count").textContent = `${len} / 160 chars${len > 160 ? ` — ${Math.ceil(len/160)} SMS` : ""}`;
+  }
+  $("s-content-plain").addEventListener("input", updateSmsCount);
+
+  function setSingleType(type) {
+    const isEmail = type === "Email";
+    $("s-content-email").classList.toggle("hidden", !isEmail);
+    $("s-content-sms").classList.toggle("hidden", isEmail);
+    if (isEmail) initQuill();
+  }
+
+  $("s-type").addEventListener("change", (e) => setSingleType(e.target.value));
+
+  // Flatpickr — calendário de agendamento
+  let scheduledPicker = null;
+  function initScheduledPicker() {
+    if (scheduledPicker) return;
+    scheduledPicker = flatpickr("#s-scheduled", {
+      enableTime: true,
+      dateFormat: "d/m/Y H:i",
+      time_24hr: true,
+      minDate: "today",
+      locale: "pt",
+      disableMobile: true,
+      onChange(selectedDates) {
+        $("s-scheduled-clear").classList.toggle("hidden", !selectedDates.length);
+      }
+    });
+    $("s-scheduled-clear").addEventListener("click", (e) => {
+      e.stopPropagation();
+      scheduledPicker.clear();
+      $("s-scheduled-clear").classList.add("hidden");
+    });
+  }
+
+  let batchUid = 0;
+  const batchInstances = new Map(); // rowEl -> { quill, picker }
+
+  function batchRowHtml(uid) {
+    return `
+      <div class="batch-row card p-4" data-uid="${uid}">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-zinc-500 font-medium">Notificação #<span class="b-num"></span></span>
+          <button type="button" class="batch-remove w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-red-400">
+            <i data-lucide="x" class="w-3 h-3"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Tipo</span>
+            <select class="b-type bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
+              <option value="Email">Email</option>
+              <option value="Sms">SMS</option>
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Destinatário</span>
+            <input type="text" class="b-recipient bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="email@exemplo.com" />
+          </label>
+          <label class="col-span-2 flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Título / Assunto</span>
+            <input type="text" class="b-title bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm" placeholder="Assunto ou título" />
+          </label>
+          <div class="col-span-2 b-content-email flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Conteúdo</span>
+            <div class="b-quill-editor"></div>
+          </div>
+          <label class="col-span-2 b-content-sms hidden flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Mensagem</span>
+            <textarea class="b-sms-text bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm resize-none" rows="3" placeholder="Texto do SMS"></textarea>
+          </label>
+          <label class="col-span-2 flex flex-col gap-1">
+            <span class="text-xs text-zinc-400">Agendar para (opcional)</span>
+            <div class="relative">
+              <input type="text" class="b-scheduled w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 pr-9 text-sm cursor-pointer focus:outline-none focus:border-zinc-600" readonly placeholder="Selecione data e horário…" />
+              <button type="button" class="b-sched-clear hidden absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded flex items-center justify-center text-zinc-500 hover:text-white">
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </label>
+        </div>
+      </div>`;
+  }
+
+  function renumberBatchRows() {
+    $("batch-rows").querySelectorAll(".b-num").forEach((el, i) => {
+      el.textContent = i + 1;
+    });
+  }
+
+  function addBatchRow() {
+    const uid = ++batchUid;
+    const container = $("batch-rows");
+    const div = document.createElement("div");
+    div.innerHTML = batchRowHtml(uid);
+    const row = div.firstElementChild;
+    container.appendChild(row);
+    renumberBatchRows();
+    lucide.createIcons();
+
+    // Quill for this row
+    const quillEl = row.querySelector(".b-quill-editor");
+    const rowQuill = new Quill(quillEl, {
+      theme: "snow",
+      placeholder: "Escreva o conteúdo do email…",
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ color: [] }, { background: [] }],
+          [{ list: "ordered" }, { list: "bullet" }],
+          [{ align: [] }],
+          ["link"],
+          ["clean"]
+        ]
+      }
+    });
+
+    // Flatpickr for this row
+    const schedInput = row.querySelector(".b-scheduled");
+    const schedClear = row.querySelector(".b-sched-clear");
+    const rowPicker = flatpickr(schedInput, {
+      enableTime: true,
+      dateFormat: "d/m/Y H:i",
+      time_24hr: true,
+      minDate: "today",
+      locale: "pt",
+      disableMobile: true,
+      onChange(dates) {
+        schedClear.classList.toggle("hidden", !dates.length);
+      }
+    });
+    schedClear.addEventListener("click", (e) => {
+      e.stopPropagation();
+      rowPicker.clear();
+      schedClear.classList.add("hidden");
+    });
+
+    // Type toggle
+    const typeSelect = row.querySelector(".b-type");
+    const contentEmail = row.querySelector(".b-content-email");
+    const contentSms   = row.querySelector(".b-content-sms");
+    typeSelect.addEventListener("change", () => {
+      const isEmail = typeSelect.value === "Email";
+      contentEmail.classList.toggle("hidden", !isEmail);
+      contentSms.classList.toggle("hidden", isEmail);
+    });
+
+    batchInstances.set(row, { quill: rowQuill, picker: rowPicker });
+
+    row.querySelector(".batch-remove").addEventListener("click", () => {
+      if ($("batch-rows").children.length > 1) {
+        batchInstances.delete(row);
+        row.remove();
+        renumberBatchRows();
+      }
+    });
+  }
+
+  function openCreateModal() {
+    $("create-feedback").textContent = "";
+    // Reset single form
+    $("s-type").selectedIndex = 0;
+    $("s-recipient").value = "";
+    $("s-title").value = "";
+    $("s-content-plain").value = "";
+    $("s-scheduled").value = "";
+    updateSmsCount();
+    // Reset batch
+    batchInstances.clear();
+    $("batch-rows").innerHTML = "";
+    addBatchRow();
+    setCreateMode("single");
+    setSingleType("Email");
+    const overlay = $("create-overlay");
+    overlay.classList.remove("hidden");
+    overlay.classList.add("flex");
+    // Init Quill after visible (needs layout)
+    requestAnimationFrame(() => {
+      initQuill();
+      quill.setContents([]);
+      initScheduledPicker();
+      scheduledPicker.clear();
+      $("s-scheduled-clear").classList.add("hidden");
+    });
+    lucide.createIcons();
+  }
+
+  function closeCreateModal() {
+    const overlay = $("create-overlay");
+    overlay.classList.add("hidden");
+    overlay.classList.remove("flex");
+  }
+
+  function setCreateMode(mode) {
+    createMode = mode;
+    $("form-single").classList.toggle("hidden", mode !== "single");
+    $("form-batch").classList.toggle("hidden", mode !== "batch");
+    $("mode-single").className = `px-3 py-1 rounded-md transition ${mode === "single" ? "bg-zinc-800 text-white" : "text-zinc-400"}`;
+    $("mode-batch").className  = `px-3 py-1 rounded-md transition ${mode === "batch"  ? "bg-zinc-800 text-white" : "text-zinc-400"}`;
+  }
+
+  $("mode-single").addEventListener("click", () => setCreateMode("single"));
+  $("mode-batch").addEventListener("click", () => setCreateMode("batch"));
+  $("batch-add").addEventListener("click", addBatchRow);
+  $("create-close").addEventListener("click", closeCreateModal);
+  $("create-cancel").addEventListener("click", closeCreateModal);
+  $("create-overlay").addEventListener("click", (e) => { if (e.target === $("create-overlay")) closeCreateModal(); });
+
+  $("btn-new-notif").addEventListener("click", openCreateModal);
+
+  $("create-submit").addEventListener("click", async () => {
+    const feedback = $("create-feedback");
+    feedback.textContent = "";
+    const btn = $("create-submit");
+    btn.disabled = true;
+
+    try {
+      let res;
+      if (createMode === "single") {
+        const type = $("s-type").value;
+        const rawContent = type === "Email"
+          ? (quill ? quill.root.innerHTML : "")
+          : $("s-content-plain").value.trim();
+        const body = {
+          type,
+          title: $("s-title").value.trim(),
+          content: rawContent,
+          recipient: $("s-recipient").value.trim(),
+        };
+        if (!body.title || !body.recipient) {
+          feedback.textContent = "Preencha título e destinatário.";
+          feedback.className = "text-sm text-red-400";
+          return;
+        }
+        const scheduledDate = scheduledPicker?.selectedDates?.[0];
+        if (scheduledDate) body.scheduledAt = scheduledDate.toISOString();
+        res = await fetch("/notifications", {
+          method: "POST",
+          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+      } else {
+        const notifications = [];
+        for (const [row, inst] of batchInstances) {
+          const type = row.querySelector(".b-type").value;
+          const content = type === "Email"
+            ? inst.quill.root.innerHTML
+            : row.querySelector(".b-sms-text").value.trim();
+          const scheduledDate = inst.picker.selectedDates?.[0];
+          const item = {
+            type,
+            title: row.querySelector(".b-title").value.trim(),
+            content,
+            recipient: row.querySelector(".b-recipient").value.trim(),
+          };
+          if (scheduledDate) item.scheduledAt = scheduledDate.toISOString();
+          notifications.push(item);
+        }
+        if (notifications.some(n => !n.title || !n.recipient)) {
+          feedback.textContent = "Preencha título e destinatário em todas as linhas.";
+          feedback.className = "text-sm text-red-400";
+          return;
+        }
+        res = await fetch("/notifications/batch", {
+          method: "POST",
+          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ notifications })
+        });
+      }
+
+      if (res.ok) {
+        closeCreateModal();
+        loadNotifications();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        feedback.textContent = err.message || `Erro ${res.status}`;
+        feedback.className = "text-sm text-red-400";
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ---------- BOOT ----------
   (async function boot() {
