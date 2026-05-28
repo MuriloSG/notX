@@ -13,13 +13,13 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
     : INotificationRepository
 {
     private const string NotificationColumns = """
-        id, application_id AS ApplicationId, type, title, content,
+        id, application_id AS ApplicationId, type, title, content, recipient,
         status, created_at AS CreatedAt, scheduled_at AS ScheduledAt, sent_at AS SentAt
         """;
 
     private const string InsertNotificationSql = """
-        INSERT INTO notifications (id, application_id, type, title, content, status, created_at, scheduled_at, sent_at)
-        VALUES (@Id, @ApplicationId, @Type, @Title, @Content, @Status, @CreatedAt, @ScheduledAt, @SentAt)
+        INSERT INTO notifications (id, application_id, type, title, content, recipient, status, created_at, scheduled_at, sent_at)
+        VALUES (@Id, @ApplicationId, @Type, @Title, @Content, @Recipient, @Status, @CreatedAt, @ScheduledAt, @SentAt)
         """;
 
     private const string InsertOutboxSql = """
@@ -137,6 +137,7 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
         Type = (int)n.Type,
         n.Title,
         n.Content,
+        n.Recipient,
         Status = (int)n.Status,
         n.CreatedAt,
         n.ScheduledAt,

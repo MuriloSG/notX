@@ -28,7 +28,7 @@ internal sealed class GetNotificationsQueryHandler(
 
         var dtos = items.Select(n => new NotificationDto(
             n.Id, n.ApplicationId, n.Type, n.Title,
-            n.Content, n.Status, n.CreatedAt, n.ScheduledAt, n.SentAt));
+            n.Content, n.Recipient, n.Status, n.CreatedAt, n.ScheduledAt, n.SentAt));
 
         return Result.Success(new PagedResult<NotificationDto>(
             dtos, totalCount, request.Page, request.PageSize));

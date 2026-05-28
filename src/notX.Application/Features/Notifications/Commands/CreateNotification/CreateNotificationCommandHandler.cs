@@ -22,6 +22,7 @@ internal sealed class CreateNotificationCommandHandler(
             request.Type,
             request.Title,
             request.Content,
+            request.Recipient,
             request.ScheduledAt);
 
         var outbox = new OutboxMessage(
@@ -31,7 +32,8 @@ internal sealed class CreateNotificationCommandHandler(
                 @event = "NotificationCreated",
                 notificationId = notification.Id,
                 type = notification.Type.ToString()
-            }));
+            }),
+            notification.ScheduledAt);
 
         await repository.InsertAsync(notification, outbox);
 
@@ -40,5 +42,5 @@ internal sealed class CreateNotificationCommandHandler(
 
     private static NotificationDto ToDto(Notification n) => new(
         n.Id, n.ApplicationId, n.Type, n.Title,
-        n.Content, n.Status, n.CreatedAt, n.ScheduledAt, n.SentAt);
+        n.Content, n.Recipient, n.Status, n.CreatedAt, n.ScheduledAt, n.SentAt);
 }

@@ -9,18 +9,23 @@ public class OutboxMessage : BaseEntity
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? ProcessedAt { get; private set; }
+    public DateTime? ScheduledAt { get; private set; }
+
+    public Guid? LockToken { get; private set; }
+    public DateTime? LockedAt { get; private set; }
 
     public int RetryCount { get; private set; }
     public string? Error { get; private set; }
 
     private OutboxMessage() { }
 
-    public OutboxMessage(string type, string payload)
+    public OutboxMessage(string type, string payload, DateTime? scheduledAt = null)
     {
         Id = Guid.NewGuid();
 
         Type = type;
         Payload = payload;
+        ScheduledAt = scheduledAt;
 
         CreatedAt = DateTime.UtcNow;
         RetryCount = 0;

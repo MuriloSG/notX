@@ -8,6 +8,7 @@ public sealed record NotificationDto(
     NotificationType Type,
     string Title,
     string Content,
+    string Recipient,
     NotificationStatus Status,
     DateTime CreatedAt,
     DateTime? ScheduledAt,

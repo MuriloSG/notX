@@ -8,6 +8,7 @@ public sealed record NotificationItem(
     NotificationType Type,
     string Title,
     string Content,
+    string Recipient,
     DateTime? ScheduledAt = null);
 
 public sealed record CreateNotificationsBatchCommand(

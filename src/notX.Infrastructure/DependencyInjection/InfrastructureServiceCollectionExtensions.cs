@@ -4,7 +4,9 @@ using notX.Application.Interfaces;
 using notX.Application.Interfaces.Repositories;
 using notX.Infrastructure.Persistence.Connections;
 using notX.Infrastructure.Persistence.Repositories;
+using notX.Infrastructure.Services;
 using notX.Infrastructure.Settings;
+using StackExchange.Redis;
 
 namespace notX.Infrastructure.DependencyInjection;
 
@@ -23,6 +25,16 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
+
+        services.AddTransient<IEmailService, EmailService>();
+
+        var redisConnectionString = configuration.GetConnectionString("redis");
+        if (!string.IsNullOrEmpty(redisConnectionString))
+        {
+            services.AddSingleton<IConnectionMultiplexer>(
+                ConnectionMultiplexer.Connect(redisConnectionString));
+        }
 
         return services;
     }

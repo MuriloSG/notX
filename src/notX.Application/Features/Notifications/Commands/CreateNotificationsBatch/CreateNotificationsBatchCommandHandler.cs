@@ -22,6 +22,7 @@ internal sealed class CreateNotificationsBatchCommandHandler(
                 n.Type,
                 n.Title,
                 n.Content,
+                n.Recipient,
                 n.ScheduledAt))
             .ToList();
 
@@ -33,7 +34,8 @@ internal sealed class CreateNotificationsBatchCommandHandler(
                     @event = "NotificationCreated",
                     notificationId = n.Id,
                     type = n.Type.ToString()
-                })))
+                }),
+                n.ScheduledAt))
             .ToList();
 
         await repository.InsertBatchAsync(notifications, outboxMessages);

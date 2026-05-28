@@ -9,4 +9,5 @@ public sealed record CreateNotificationCommand(
     NotificationType Type,
     string Title,
     string Content,
+    string Recipient,
     DateTime? ScheduledAt = null) : IRequest<Result<NotificationDto>>;

@@ -9,6 +9,7 @@ public class Notification : BaseEntity
     public NotificationType Type { get; internal set; }
     public string Title { get; internal set; } = default!;
     public string Content { get; internal set; } = default!;
+    public string Recipient { get; internal set; } = default!;
     public NotificationStatus Status { get; internal set; }
     public DateTime CreatedAt { get; internal set; }
     public DateTime? ScheduledAt { get; internal set; }
@@ -21,6 +22,7 @@ public class Notification : BaseEntity
         NotificationType type,
         string title,
         string content,
+        string recipient,
         DateTime? scheduledAt = null) => new()
     {
         Id = Guid.NewGuid(),
@@ -28,6 +30,7 @@ public class Notification : BaseEntity
         Type = type,
         Title = title,
         Content = content,
+        Recipient = recipient,
         Status = NotificationStatus.Pending,
         CreatedAt = DateTime.UtcNow,
         ScheduledAt = scheduledAt

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\notX.Api\notX.Api.csproj" />
+    <ProjectReference Include="..\notX.EmailWorker\notX.EmailWorker.csproj" />
   </ItemGroup>
 
 </Project>

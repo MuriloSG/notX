@@ -7,13 +7,18 @@ public sealed class CreateNotificationCommandValidator : AbstractValidator<Creat
     public CreateNotificationCommandValidator()
     {
         RuleFor(x => x.Type)
-            .IsInEnum().WithMessage("Invalid notification type.");
+            .IsInEnum().WithMessage("Tipo de notificação inválido.");
 
         RuleFor(x => x.Title)
-            .NotEmpty().WithMessage("Title is required.")
-            .MaximumLength(500).WithMessage("Title must not exceed 500 characters.");
+            .NotEmpty().WithMessage("O título é obrigatório.")
+            .MaximumLength(500).WithMessage("O título não pode ter mais de 500 caracteres.");
 
         RuleFor(x => x.Content)
-            .NotEmpty().WithMessage("Content is required.");
+            .NotEmpty().WithMessage("O conteúdo é obrigatório.");
+
+        RuleFor(x => x.Recipient)
+            .NotEmpty().WithMessage("O destinatário é obrigatório.")
+            .EmailAddress().WithMessage("O destinatário deve ser um endereço de e-mail válido.")
+            .When(x => x.Type == notX.Domain.Enums.NotificationType.Email);
     }
 }

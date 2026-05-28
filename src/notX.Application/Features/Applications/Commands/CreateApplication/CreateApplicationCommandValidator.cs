@@ -7,7 +7,7 @@ public sealed class CreateApplicationCommandValidator : AbstractValidator<Create
     public CreateApplicationCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
+            .NotEmpty().WithMessage("O nome é obrigatório.")
+            .MaximumLength(200).WithMessage("O nome não pode ter mais de 200 caracteres.");
     }
 }
