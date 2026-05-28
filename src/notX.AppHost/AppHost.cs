@@ -14,7 +14,19 @@ builder.AddProject<Projects.notX_Api>("notx-api")
     .WithReference(database)
     .WithReference(redis)
     .WaitFor(database)
-    .WaitFor(redis);
+    .WaitFor(redis)
+    .WithUrls(ctx =>
+    {
+        // Renomeia os endpoints existentes (http/https) — eles já apontam pra raiz, que serve a SPA
+        foreach (var url in ctx.Urls.Where(u => u.Endpoint is not null))
+            url.DisplayText = $"Dashboard ({url.Endpoint!.EndpointName})";
+
+        // Adiciona um link separado pro Scalar usando a base do endpoint https (ou http como fallback)
+        var baseUrl = ctx.Urls.FirstOrDefault(u => u.Endpoint?.EndpointName == "https")?.Url
+                   ?? ctx.Urls.FirstOrDefault(u => u.Endpoint?.EndpointName == "http")?.Url;
+        if (baseUrl is not null)
+            ctx.Urls.Add(new() { Url = $"{baseUrl.TrimEnd('/')}/scalar/v1", DisplayText = "API Docs (Scalar)" });
+    });
 
 builder.AddProject<Projects.notX_EmailWorker>("notx-emailworker")
     .WithReference(database)

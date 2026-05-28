@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>notX — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    html, body { background: #0a0a0a; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .card { background: #111113; border: 1px solid #1f1f23; border-radius: 12px; }
+    .scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scroll::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- LOGIN -->
+<section id="login" class="min-h-screen flex items-center justify-center px-4">
+  <div class="card w-full max-w-md p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-lg bg-white text-black flex items-center justify-center font-bold">nX</div>
+      <div>
+        <h1 class="text-xl font-semibold">notX</h1>
+        <p class="text-xs text-zinc-500">Dashboard de notificações</p>
+      </div>
+    </div>
+    <h2 class="text-lg font-medium mb-1">Conectar com API Key</h2>
+    <p class="text-sm text-zinc-500 mb-6">Cole abaixo a API key da sua aplicação para acessar o dashboard.</p>
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="text-xs text-zinc-400 mb-1 block">X-Api-Key</label>
+        <input id="api-key-input" type="password" autocomplete="off"
+               class="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-zinc-600"
+               placeholder="64 caracteres hexadecimais" required />
+      </div>
+      <div id="login-error" class="hidden text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
+      <button type="submit"
+              class="w-full bg-white text-black font-medium py-2.5 rounded-lg hover:bg-zinc-200 transition flex items-center justify-center gap-2">
+        <i data-lucide="log-in" class="w-4 h-4"></i>
+        <span>Conectar</span>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="app" class="hidden h-screen overflow-hidden flex">
+  <!-- Sidebar -->
+  <aside class="w-60 border-r border-zinc-900 flex flex-col shrink-0 h-screen">
+    <div class="p-5 flex items-center gap-3 border-b border-zinc-900">
+      <div class="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center font-bold text-sm">nX</div>
+      <span class="font-semibold">notX</span>
+    </div>
+    <nav class="flex-1 p-3 space-y-1">
+      <button data-tab="dashboard" class="tab-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-900 text-white text-sm">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+      </button>
+      <button data-tab="notifications" class="tab-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-900 text-zinc-400 text-sm">
+        <i data-lucide="bell" class="w-4 h-4"></i> Notificações
+      </button>
+    </nav>
+    <div class="p-3 border-t border-zinc-900">
+      <div class="px-3 py-2 text-xs text-zinc-500 truncate" id="app-name">—</div>
+      <button id="logout" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-900 text-zinc-400 text-sm">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 flex flex-col">
+    <header class="border-b border-zinc-900 px-8 py-4 flex items-center justify-between">
+      <h2 class="text-lg font-semibold" id="page-title">Dashboard</h2>
+      <div id="conn-status" class="flex items-center gap-2 text-sm text-zinc-400">
+        <span class="w-2 h-2 rounded-full bg-zinc-600" id="conn-dot"></span>
+        <span id="conn-label">Conectando…</span>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-auto scroll px-8 py-6">
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="tab-panel">
+        <div>
+          <h3 class="text-2xl font-semibold mb-1">Visão Geral</h3>
+          <p class="text-sm text-zinc-500 mb-6">Monitore suas notificações em tempo real</p>
+        </div>
+
+        <!-- Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition" data-card="total">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-zinc-400">Total</span>
+              <i data-lucide="bell" class="w-4 h-4 text-zinc-500"></i>
+            </div>
+            <div class="text-3xl font-semibold" id="m-total">0</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition" data-card="status" data-status="Pending">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-zinc-400">Pendente</span>
+              <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="text-3xl font-semibold" id="m-pending">0</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition" data-card="status" data-status="Sent">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-zinc-400">Enviadas</span>
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-3xl font-semibold" id="m-sent">0</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition" data-card="status" data-status="Failed">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-zinc-400">Falhas</span>
+              <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
+            </div>
+            <div class="text-3xl font-semibold" id="m-failed">0</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition" data-card="rate">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-zinc-400">Taxa de sucesso</span>
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-3xl font-semibold"><span id="m-rate">0</span><span class="text-lg text-zinc-500">%</span></div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <div class="card p-5 lg:col-span-2">
+            <h4 class="text-sm font-medium mb-4 flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Últimas 24h (por hora)
+            </h4>
+            <div class="h-64"><canvas id="chart-24h"></canvas></div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-zinc-700 transition">
+            <h4 class="text-sm font-medium mb-4 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4"></i> Por tipo
+            </h4>
+            <div class="h-64"><canvas id="chart-types"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Recent table -->
+        <div class="card">
+          <div class="px-5 py-4 border-b border-zinc-900 flex items-center justify-between">
+            <h4 class="text-sm font-medium flex items-center gap-2">
+              <i data-lucide="list" class="w-4 h-4"></i> Últimas notificações
+            </h4>
+            <span class="text-xs text-zinc-500" id="recent-count">0 itens</span>
+          </div>
+          <div class="overflow-x-auto scroll">
+            <table class="w-full text-sm">
+              <thead class="text-xs uppercase text-zinc-500 border-b border-zinc-900">
+                <tr>
+                  <th class="text-left px-5 py-3">ID</th>
+                  <th class="text-left px-5 py-3">Tipo</th>
+                  <th class="text-left px-5 py-3">Título</th>
+                  <th class="text-left px-5 py-3">Destinatário</th>
+                  <th class="text-left px-5 py-3">Status</th>
+                  <th class="text-left px-5 py-3">Criado em</th>
+                </tr>
+              </thead>
+              <tbody id="recent-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS TAB -->
+      <div id="tab-notifications" class="tab-panel hidden">
+        <div>
+          <h3 class="text-2xl font-semibold mb-1">Notificações</h3>
+          <p class="text-sm text-zinc-500 mb-6">Lista completa com filtros e paginação</p>
+        </div>
+
+        <div class="card p-4 mb-4 flex flex-wrap gap-3 items-center">
+          <select id="f-status" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
+            <option value="">Todos status</option>
+            <option value="Pending">Pendente</option>
+            <option value="Processing">Processando</option>
+            <option value="Sent">Enviada</option>
+            <option value="Failed">Falhou</option>
+            <option value="Cancelled">Cancelada</option>
+          </select>
+          <select id="f-type" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
+            <option value="">Todos tipos</option>
+            <option value="Email">Email</option>
+            <option value="Sms">SMS</option>
+          </select>
+          <select id="f-page-size" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
+            <option value="20">20 / pág</option><option value="50">50 / pág</option><option value="100">100 / pág</option>
+          </select>
+          <button id="f-apply" class="ml-auto bg-white text-black px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+            <i data-lucide="search" class="w-4 h-4"></i> Buscar
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="overflow-x-auto scroll">
+            <table class="w-full text-sm">
+              <thead class="text-xs uppercase text-zinc-500 border-b border-zinc-900">
+                <tr>
+                  <th class="text-left px-5 py-3">ID</th>
+                  <th class="text-left px-5 py-3">Tipo</th>
+                  <th class="text-left px-5 py-3">Título</th>
+                  <th class="text-left px-5 py-3">Destinatário</th>
+                  <th class="text-left px-5 py-3">Status</th>
+                  <th class="text-left px-5 py-3">Criado em</th>
+                  <th class="text-left px-5 py-3">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="notif-body"></tbody>
+            </table>
+          </div>
+          <div class="px-5 py-3 border-t border-zinc-900 flex items-center justify-between text-sm">
+            <span class="text-zinc-500" id="notif-info">—</span>
+            <div class="flex gap-2">
+              <button id="notif-prev" class="px-3 py-1.5 rounded-lg border border-zinc-800 hover:bg-zinc-900">‹</button>
+              <button id="notif-next" class="px-3 py-1.5 rounded-lg border border-zinc-800 hover:bg-zinc-900">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- DRAWER -->
+<div id="drawer-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
+<aside id="drawer" class="fixed top-0 right-0 h-screen w-full max-w-2xl bg-[#0a0a0a] border-l border-zinc-900 z-50 translate-x-full transition-transform duration-300 ease-out flex flex-col">
+  <div class="px-6 py-4 border-b border-zinc-900 flex items-center justify-between shrink-0">
+    <div>
+      <h3 id="drawer-title" class="text-lg font-semibold">—</h3>
+      <p id="drawer-sub" class="text-xs text-zinc-500 mt-0.5"></p>
+    </div>
+    <button id="drawer-close" class="w-8 h-8 rounded-lg hover:bg-zinc-900 flex items-center justify-center text-zinc-400">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+  <div id="drawer-body" class="flex-1 overflow-auto scroll p-6"></div>
+</aside>
+
+<script>
+  const STORAGE_KEY = "notx_api_key";
+  let apiKey = localStorage.getItem(STORAGE_KEY) || "";
+  let sseAbort = null;
+  let chart24h, chartTypes;
+  let notifPage = 1, notifTotal = 0;
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (d) => d ? new Date(d.endsWith("Z") ? d : d + "Z").toLocaleString("pt-BR") : "—";
+
+  const STATUS_PT = {
+    Pending:    "Pendente",
+    Processing: "Processando",
+    Sent:       "Enviada",
+    Failed:     "Falhou",
+    Cancelled:  "Cancelada"
+  };
+  const TYPE_PT = { Email: "Email", Sms: "SMS" };
+  const statusLabel = (s) => STATUS_PT[s] || s;
+  const typeLabel = (t) => TYPE_PT[t] || t;
+
+  const statusBadge = (s) => {
+    const map = {
+      Pending:    "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      Processing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      Sent:       "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      Failed:     "bg-red-500/10 text-red-400 border-red-500/20",
+      Cancelled:  "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+    };
+    return `<span class="text-xs px-2 py-0.5 rounded border ${map[s] || ""}">${statusLabel(s)}</span>`;
+  };
+
+  const typeBadge = (t) => {
+    const map = {
+      Email: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      Sms:   "bg-purple-500/10 text-purple-400 border-purple-500/20"
+    };
+    const icon = t === "Email" ? "mail" : "smartphone";
+    return `<span class="text-xs px-2 py-0.5 rounded border ${map[t] || ""} inline-flex items-center gap-1">
+              <i data-lucide="${icon}" class="w-3 h-3"></i>${typeLabel(t)}</span>`;
+  };
+
+  const shortId = (id) => id.split("-")[0];
+
+  // ---------- LOGIN ----------
+  async function tryLogin(key) {
+    const res = await fetch(`/applications/${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error("API key inválida.");
+    return await res.json();
+  }
+
+  $("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("login-error");
+    err.classList.add("hidden");
+    const key = $("api-key-input").value.trim();
+    try {
+      const app = await tryLogin(key);
+      apiKey = key;
+      localStorage.setItem(STORAGE_KEY, key);
+      enterApp(app);
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.classList.remove("hidden");
+    }
+  });
+
+  $("logout").addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    apiKey = "";
+    if (sseAbort) sseAbort.abort();
+    location.reload();
+  });
+
+  function enterApp(app) {
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("app-name").textContent = app.name;
+    initCharts();
+    wireInteractions();
+    connectSse();
+    lucide.createIcons();
+  }
+
+  // ---------- TABS ----------
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => {
+        b.classList.remove("bg-zinc-900","text-white");
+        b.classList.add("text-zinc-400");
+      });
+      btn.classList.add("bg-zinc-900","text-white");
+      btn.classList.remove("text-zinc-400");
+      const tab = btn.dataset.tab;
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+      $(`tab-${tab}`).classList.remove("hidden");
+      $("page-title").textContent = tab === "dashboard" ? "Dashboard" : "Notificações";
+      if (tab === "notifications") loadNotifications();
+    });
+  });
+
+  // ---------- CHARTS ----------
+  function initCharts() {
+    Chart.defaults.color = "#a1a1aa";
+    Chart.defaults.borderColor = "#27272a";
+
+    const canvas24h = $("chart-24h");
+    const ctx24h = canvas24h.getContext("2d");
+    const gradSent = ctx24h.createLinearGradient(0, 0, 0, 260);
+    gradSent.addColorStop(0, "rgba(16, 185, 129, 0.35)");
+    gradSent.addColorStop(1, "rgba(16, 185, 129, 0)");
+    const gradFailed = ctx24h.createLinearGradient(0, 0, 0, 260);
+    gradFailed.addColorStop(0, "rgba(239, 68, 68, 0.30)");
+    gradFailed.addColorStop(1, "rgba(239, 68, 68, 0)");
+
+    chart24h = new Chart(canvas24h, {
+      type: "line",
+      data: { labels: [], datasets: [
+        {
+          label: "Enviadas", data: [],
+          borderColor: "#10b981", backgroundColor: gradSent,
+          borderWidth: 2, fill: true, tension: 0.4,
+          pointRadius: 0, pointHoverRadius: 5,
+          pointHoverBackgroundColor: "#10b981", pointHoverBorderColor: "#0a0a0a", pointHoverBorderWidth: 2
+        },
+        {
+          label: "Falhas", data: [],
+          borderColor: "#ef4444", backgroundColor: gradFailed,
+          borderWidth: 2, fill: true, tension: 0.4,
+          pointRadius: 0, pointHoverRadius: 5,
+          pointHoverBackgroundColor: "#ef4444", pointHoverBorderColor: "#0a0a0a", pointHoverBorderWidth: 2
+        }
+      ]},
+      options: {
+        maintainAspectRatio: false, responsive: true,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "bottom", align: "end",
+            labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: "circle", padding: 16, color: "#a1a1aa" }
+          },
+          tooltip: {
+            backgroundColor: "#0a0a0a", borderColor: "#27272a", borderWidth: 1,
+            titleColor: "#fafafa", bodyColor: "#d4d4d8",
+            padding: 12, cornerRadius: 8, displayColors: true, boxPadding: 6, usePointStyle: true
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false }, border: { display: false },
+            ticks: { color: "#52525b", font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "rgba(39, 39, 42, 0.6)", drawBorder: false },
+            border: { display: false },
+            ticks: { color: "#52525b", font: { size: 11 }, precision: 0, padding: 8 }
+          }
+        }
+      }
+    });
+
+    chartTypes = new Chart($("chart-types"), {
+      type: "doughnut",
+      data: { labels: ["Email","SMS"], datasets: [{
+        data: [0,0],
+        backgroundColor: ["#3b82f6","#a855f7"],
+        borderColor: "#0a0a0a", borderWidth: 3, hoverOffset: 8
+      }]},
+      options: {
+        maintainAspectRatio: false, responsive: true,
+        cutout: "70%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: "circle", padding: 16, color: "#a1a1aa" }
+          },
+          tooltip: {
+            backgroundColor: "#0a0a0a", borderColor: "#27272a", borderWidth: 1,
+            titleColor: "#fafafa", bodyColor: "#d4d4d8",
+            padding: 12, cornerRadius: 8, usePointStyle: true, boxPadding: 6
+          }
+        }
+      }
+    });
+  }
+
+  // ---------- SSE ----------
+  async function connectSse() {
+    setConn(false, "Conectando…");
+    sseAbort = new AbortController();
+    try {
+      const res = await fetch("/events/dashboard", {
+        headers: { "X-Api-Key": apiKey, "Accept": "text/event-stream" },
+        signal: sseAbort.signal
+      });
+      if (!res.ok) {
+        setConn(false, `Erro ${res.status}`);
+        return;
+      }
+      setConn(true, "Conectado");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf("\n\n")) !== -1) {
+          const block = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          handleSseBlock(block);
+        }
+      }
+    } catch (ex) {
+      if (ex.name !== "AbortError") {
+        setConn(false, "Desconectado — tentando reconectar…");
+        setTimeout(connectSse, 3000);
+      }
+    }
+  }
+
+  function setConn(ok, label) {
+    $("conn-dot").className = `w-2 h-2 rounded-full ${ok ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`;
+    $("conn-label").textContent = label;
+  }
+
+  function handleSseBlock(block) {
+    if (block.startsWith(":")) return; // keepalive
+    let event = "message", data = "";
+    for (const line of block.split("\n")) {
+      if (line.startsWith("event:")) event = line.slice(6).trim();
+      else if (line.startsWith("data:")) data += line.slice(5).trim();
+    }
+    if (!data) return;
+    let parsed;
+    try { parsed = JSON.parse(data); } catch { return; }
+
+    if (event === "metrics.snapshot") applySnapshot(parsed);
+    else if (event === "notification.created" || event === "notification.status_changed") flashBadge();
+  }
+
+  function flashBadge() {
+    const dot = $("conn-dot");
+    dot.classList.add("ring-2","ring-emerald-400");
+    setTimeout(() => dot.classList.remove("ring-2","ring-emerald-400"), 400);
+  }
+
+  function applySnapshot(s) {
+    const st = s.status;
+    const total = st.pending + st.processing + st.sent + st.failed + st.cancelled;
+    $("m-total").textContent = total.toLocaleString("pt-BR");
+    $("m-pending").textContent = st.pending.toLocaleString("pt-BR");
+    $("m-sent").textContent = st.sent.toLocaleString("pt-BR");
+    $("m-failed").textContent = st.failed.toLocaleString("pt-BR");
+    $("m-rate").textContent = s.successRate.toFixed(2);
+
+    // Preenche 24 buckets fixos (hora atual indo 23h pra trás), zerando os ausentes
+    const byHour = new Map();
+    for (const b of s.last24h) {
+      const d = new Date(b.hour.endsWith("Z") ? b.hour : b.hour + "Z");
+      d.setMinutes(0, 0, 0);
+      byHour.set(d.getTime(), b);
+    }
+    const labels = [], sent = [], failed = [];
+    const now = new Date(); now.setMinutes(0, 0, 0);
+    for (let i = 23; i >= 0; i--) {
+      const t = new Date(now.getTime() - i * 3600_000);
+      const b = byHour.get(t.getTime());
+      labels.push(t.getHours().toString().padStart(2, "0") + "h");
+      sent.push(b ? b.sent : 0);
+      failed.push(b ? b.failed : 0);
+    }
+    chart24h.data.labels = labels;
+    chart24h.data.datasets[0].data = sent;
+    chart24h.data.datasets[1].data = failed;
+    chart24h.update("none");
+
+    chartTypes.data.datasets[0].data = [s.types.email, s.types.sms];
+    chartTypes.update("none");
+
+    $("recent-count").textContent = `${s.recent.length} itens`;
+    $("recent-body").innerHTML = s.recent.map((n, i) => `
+      <tr class="recent-row border-b border-zinc-900 hover:bg-zinc-950 cursor-pointer" data-idx="${i}">
+        <td class="px-5 py-3 font-mono text-xs text-zinc-400">${shortId(n.id)}</td>
+        <td class="px-5 py-3">${typeBadge(n.type)}</td>
+        <td class="px-5 py-3 truncate max-w-xs">${escapeHtml(n.title)}</td>
+        <td class="px-5 py-3 text-zinc-400">${escapeHtml(n.recipient || "—")}</td>
+        <td class="px-5 py-3">${statusBadge(n.status)}</td>
+        <td class="px-5 py-3 text-zinc-400">${fmt(n.createdAt)}</td>
+      </tr>`).join("");
+    lucide.createIcons();
+    document.querySelectorAll(".recent-row").forEach(r => {
+      r.addEventListener("click", () => showNotificationDetails(s.recent[+r.dataset.idx]));
+    });
+  }
+
+  function escapeHtml(s) {
+    return (s ?? "").toString()
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // ---------- NOTIFICATIONS TAB ----------
+  async function loadNotifications() {
+    const status = $("f-status").value;
+    const type = $("f-type").value;
+    const pageSize = parseInt($("f-page-size").value, 10);
+    const params = new URLSearchParams({ page: notifPage, pageSize });
+    if (status) params.set("status", status);
+    if (type) params.set("type", type);
+    const res = await fetch(`/notifications?${params}`, { headers: { "X-Api-Key": apiKey } });
+    if (!res.ok) return;
+    const data = await res.json();
+    notifTotal = data.totalCount;
+    $("notif-info").textContent = `${data.items.length} de ${notifTotal} — página ${notifPage}`;
+    $("notif-body").innerHTML = data.items.map((n, i) => `
+      <tr class="notif-row border-b border-zinc-900 hover:bg-zinc-950 cursor-pointer" data-idx="${i}">
+        <td class="px-5 py-3 font-mono text-xs text-zinc-400">${shortId(n.id)}</td>
+        <td class="px-5 py-3">${typeBadge(n.type)}</td>
+        <td class="px-5 py-3 truncate max-w-xs">${escapeHtml(n.title)}</td>
+        <td class="px-5 py-3 text-zinc-400">${escapeHtml(n.recipient || "—")}</td>
+        <td class="px-5 py-3">${statusBadge(n.status)}</td>
+        <td class="px-5 py-3 text-zinc-400">${fmt(n.createdAt)}</td>
+        <td class="px-5 py-3">
+          ${n.status === "Failed" || n.status === "Cancelled"
+            ? `<button data-action="retry" data-id="${n.id}" class="text-xs text-emerald-400 hover:underline">Reenviar</button>`
+            : n.status !== "Sent"
+              ? `<button data-action="cancel" data-id="${n.id}" class="text-xs text-red-400 hover:underline">Cancelar</button>`
+              : "—"}
+        </td>
+      </tr>`).join("");
+    lucide.createIcons();
+
+    document.querySelectorAll("#notif-body button[data-action]").forEach(b => {
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const action = b.dataset.action;
+        await fetch(`/notifications/${b.dataset.id}/${action}`, {
+          method: "POST", headers: { "X-Api-Key": apiKey }
+        });
+        loadNotifications();
+      });
+    });
+    document.querySelectorAll(".notif-row").forEach(r => {
+      r.addEventListener("click", () => showNotificationDetails(data.items[+r.dataset.idx]));
+    });
+  }
+
+  $("f-apply").addEventListener("click", () => { notifPage = 1; loadNotifications(); });
+  $("notif-prev").addEventListener("click", () => { if (notifPage > 1) { notifPage--; loadNotifications(); } });
+  $("notif-next").addEventListener("click", () => {
+    const pageSize = parseInt($("f-page-size").value, 10);
+    if (notifPage * pageSize < notifTotal) { notifPage++; loadNotifications(); }
+  });
+
+  // ---------- DRAWER ----------
+  function openDrawer(title, sub, html) {
+    $("drawer-title").textContent = title;
+    $("drawer-sub").textContent = sub || "";
+    $("drawer-body").innerHTML = html;
+    $("drawer-overlay").classList.remove("hidden");
+    requestAnimationFrame(() => {
+      $("drawer").classList.remove("translate-x-full");
+    });
+    lucide.createIcons();
+  }
+  function closeDrawer() {
+    $("drawer").classList.add("translate-x-full");
+    setTimeout(() => $("drawer-overlay").classList.add("hidden"), 300);
+  }
+  $("drawer-close").addEventListener("click", closeDrawer);
+  $("drawer-overlay").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+  async function drawerList(title, sub, params) {
+    openDrawer(title, sub, `<div class="text-zinc-500 text-sm">Carregando…</div>`);
+    const qs = new URLSearchParams({ page: 1, pageSize: 50, ...params });
+    const res = await fetch(`/notifications?${qs}`, { headers: { "X-Api-Key": apiKey } });
+    if (!res.ok) {
+      $("drawer-body").innerHTML = `<div class="text-red-400 text-sm">Erro ao carregar.</div>`;
+      return;
+    }
+    const data = await res.json();
+    if (data.items.length === 0) {
+      $("drawer-body").innerHTML = `<div class="text-zinc-500 text-sm py-12 text-center">Nenhuma notificação encontrada.</div>`;
+      return;
+    }
+    $("drawer-sub").textContent = `${sub} — ${data.items.length} de ${data.totalCount}`;
+    $("drawer-body").innerHTML = `
+      <div class="space-y-2">
+        ${data.items.map(n => `
+          <button data-id="${n.id}" class="drawer-item w-full text-left card p-4 hover:border-zinc-700 transition flex items-start gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                ${typeBadge(n.type)} ${statusBadge(n.status)}
+                <span class="font-mono text-[10px] text-zinc-600 ml-auto">${shortId(n.id)}</span>
+              </div>
+              <div class="font-medium truncate">${escapeHtml(n.title)}</div>
+              <div class="text-xs text-zinc-500 mt-1 flex items-center gap-3">
+                <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i>${escapeHtml(n.recipient || "—")}</span>
+                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${fmt(n.createdAt)}</span>
+              </div>
+            </div>
+          </button>`).join("")}
+      </div>`;
+    lucide.createIcons();
+    document.querySelectorAll(".drawer-item").forEach(b => {
+      b.addEventListener("click", () => {
+        const n = data.items.find(x => x.id === b.dataset.id);
+        showNotificationDetails(n);
+      });
+    });
+  }
+
+  function showNotificationDetails(n) {
+    const rows = [
+      ["ID", `<span class="font-mono text-xs">${n.id}</span>`],
+      ["Tipo", typeBadge(n.type)],
+      ["Status", statusBadge(n.status)],
+      ["Título", escapeHtml(n.title)],
+      ["Conteúdo", `<div class="bg-black border border-zinc-900 rounded-lg p-3 text-sm whitespace-pre-wrap">${escapeHtml(n.content || "—")}</div>`],
+      ["Destinatário", escapeHtml(n.recipient || "—")],
+      ["Criado em", fmt(n.createdAt)],
+      ["Agendado para", n.scheduledAt ? fmt(n.scheduledAt) : "—"],
+      ["Enviado em", n.sentAt ? fmt(n.sentAt) : "—"],
+    ];
+    const actions = [];
+    if (n.status === "Failed" || n.status === "Cancelled")
+      actions.push(`<button data-action="retry" data-id="${n.id}" class="det-action px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm flex items-center gap-2"><i data-lucide="rotate-cw" class="w-4 h-4"></i>Reenviar</button>`);
+    else if (n.status !== "Sent")
+      actions.push(`<button data-action="cancel" data-id="${n.id}" class="det-action px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-sm flex items-center gap-2"><i data-lucide="x" class="w-4 h-4"></i>Cancelar</button>`);
+
+    openDrawer("Detalhes da notificação", shortId(n.id), `
+      <div class="space-y-3">
+        ${rows.map(([k,v]) => `
+          <div class="grid grid-cols-3 gap-3 text-sm">
+            <div class="text-zinc-500">${k}</div>
+            <div class="col-span-2">${v}</div>
+          </div>`).join("")}
+        ${actions.length ? `<div class="pt-4 border-t border-zinc-900 flex gap-2">${actions.join("")}</div>` : ""}
+      </div>`);
+
+    document.querySelectorAll(".det-action").forEach(b => {
+      b.addEventListener("click", async () => {
+        await fetch(`/notifications/${b.dataset.id}/${b.dataset.action}`, {
+          method: "POST", headers: { "X-Api-Key": apiKey }
+        });
+        closeDrawer();
+      });
+    });
+  }
+
+  // ---------- INTERACTIVITY: cards / charts / rows ----------
+  function wireInteractions() {
+    document.querySelectorAll("[data-card]").forEach(card => {
+      card.addEventListener("click", () => {
+        const kind = card.dataset.card;
+        if (kind === "total")  return drawerList("Todas as notificações", "Sem filtro");
+        if (kind === "rate")   return drawerList("Enviadas + Falhas", "Base do cálculo da taxa de sucesso");
+        if (kind === "status") {
+          const s = card.dataset.status;
+          return drawerList(`Status: ${statusLabel(s)}`, `Filtrando por status = ${statusLabel(s)}`, { status: s });
+        }
+      });
+    });
+
+    // Click no gráfico 24h → drill-down por hora
+    chart24h.options.onClick = (_, els) => {
+      if (!els.length) return;
+      const idx = els[0].index;
+      const dsIdx = els[0].datasetIndex;
+      const now = new Date(); now.setMinutes(0, 0, 0);
+      const hourStart = new Date(now.getTime() - (23 - idx) * 3600_000);
+      const hourEnd   = new Date(hourStart.getTime() + 3600_000 - 1);
+      const status = dsIdx === 0 ? "Sent" : "Failed";
+      drawerList(
+        `${statusLabel(status)} — ${hourStart.getHours().toString().padStart(2,"0")}h`,
+        `${fmt(hourStart.toISOString())} → ${fmt(hourEnd.toISOString())}`,
+        { status, from: hourStart.toISOString(), to: hourEnd.toISOString() }
+      );
+    };
+    chart24h.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; };
+
+    // Click no donut → drill-down por tipo
+    chartTypes.options.onClick = (_, els) => {
+      if (!els.length) return;
+      const type = els[0].index === 0 ? "Email" : "Sms";
+      drawerList(`Tipo: ${typeLabel(type)}`, `Filtrando por tipo = ${typeLabel(type)}`, { type });
+    };
+    chartTypes.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; };
+  }
+
+  // ---------- BOOT ----------
+  (async function boot() {
+    lucide.createIcons();
+    if (apiKey) {
+      try {
+        const app = await tryLogin(apiKey);
+        enterApp(app);
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        apiKey = "";
+      }
+    }
+  })();
+</script>
+</body>
+</html>

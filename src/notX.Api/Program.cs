@@ -90,7 +90,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseMiddleware<ApiKeyMiddleware>();
 
