@@ -207,6 +207,7 @@ public sealed class NotificationsController(
     /// <param name="status">Filtrar por status (opcional).</param>
     /// <param name="from">Filtrar por data de criação — início, inclusive (opcional).</param>
     /// <param name="to">Filtrar por data de criação — fim, inclusive (opcional).</param>
+    /// <param name="recipient">Filtrar por destinatário — busca parcial, sem distinção de maiúsculas (opcional).</param>
     /// <param name="page">Número da página, a partir de 1 (padrão: 1).</param>
     /// <param name="pageSize">Quantidade de itens por página, máx. 100 (padrão: 20).</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
@@ -221,12 +222,13 @@ public sealed class NotificationsController(
         [FromQuery] NotificationStatus? status,
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
+        [FromQuery] string? recipient,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new GetNotificationsQuery(type, status, from, to, page, pageSize),
+            new GetNotificationsQuery(type, status, from, to, recipient, page, pageSize),
             cancellationToken);
 
         return Ok(result.Value);

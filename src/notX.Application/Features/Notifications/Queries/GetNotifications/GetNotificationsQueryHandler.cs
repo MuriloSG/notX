@@ -21,6 +21,7 @@ internal sealed class GetNotificationsQueryHandler(
             request.Status,
             request.From,
             request.To,
+            request.Recipient,
             request.Page,
             request.PageSize);
 

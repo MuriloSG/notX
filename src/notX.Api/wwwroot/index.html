@@ -276,6 +276,13 @@
             <option value="Email">Email</option>
             <option value="Sms">SMS</option>
           </select>
+          <div class="relative">
+            <i data-lucide="at-sign" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></i>
+            <input id="f-recipient" type="text" placeholder="Buscar destinatário..." class="bg-black border border-zinc-800 focus:border-zinc-500 focus:outline-none rounded-lg pl-9 pr-9 py-2 text-sm w-56 transition-colors" />
+            <span id="f-recipient-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
+              <svg class="animate-spin w-4 h-4 text-zinc-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            </span>
+          </div>
           <select id="f-page-size" class="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm">
             <option value="20">20 / pág</option><option value="50">50 / pág</option><option value="100">100 / pág</option>
           </select>
@@ -753,9 +760,11 @@
     const status = $("f-status").value;
     const type = $("f-type").value;
     const pageSize = parseInt($("f-page-size").value, 10);
+    const recipient = $("f-recipient").value.trim();
     const params = new URLSearchParams({ page: notifPage, pageSize });
     if (status) params.set("status", status);
     if (type) params.set("type", type);
+    if (recipient) params.set("recipient", recipient);
     const res = await fetch(`/notifications?${params}`, { headers: { "X-Api-Key": apiKey } });
     if (!res.ok) return;
     const data = await res.json();
@@ -798,6 +807,18 @@
   }
 
   $("f-apply").addEventListener("click", () => { notifPage = 1; loadNotifications(); });
+
+  let recipientDebounce;
+  $("f-recipient").addEventListener("input", () => {
+    clearTimeout(recipientDebounce);
+    const spinner = $("f-recipient-spinner");
+    spinner.classList.remove("hidden");
+    recipientDebounce = setTimeout(() => {
+      spinner.classList.add("hidden");
+      notifPage = 1;
+      loadNotifications();
+    }, 3000);
+  });
   $("notif-prev").addEventListener("click", () => { if (notifPage > 1) { notifPage--; loadNotifications(); } });
   $("notif-next").addEventListener("click", () => {
     const pageSize = parseInt($("f-page-size").value, 10);

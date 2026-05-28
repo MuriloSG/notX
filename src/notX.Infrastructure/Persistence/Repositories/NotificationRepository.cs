@@ -99,6 +99,12 @@ internal sealed partial class NotificationRepository(IDbConnectionFactory connec
             parameters.Add("To", filter.To.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.Recipient))
+        {
+            where.Append(" AND recipient ILIKE @Recipient");
+            parameters.Add("Recipient", $"%{filter.Recipient}%");
+        }
+
         var offset = (filter.Page - 1) * filter.PageSize;
         parameters.Add("Offset", offset);
         parameters.Add("PageSize", filter.PageSize);

@@ -8,5 +8,6 @@ public sealed record NotificationFilter(
     NotificationStatus? Status,
     DateTime? From,
     DateTime? To,
+    string? Recipient,
     int Page,
     int PageSize);

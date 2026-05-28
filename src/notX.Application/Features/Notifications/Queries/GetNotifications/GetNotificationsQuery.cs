@@ -10,5 +10,6 @@ public sealed record GetNotificationsQuery(
     NotificationStatus? Status = null,
     DateTime? From = null,
     DateTime? To = null,
+    string? Recipient = null,
     int Page = 1,
     int PageSize = 20) : IRequest<Result<PagedResult<NotificationDto>>>;
