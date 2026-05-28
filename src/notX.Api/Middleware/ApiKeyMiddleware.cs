@@ -7,13 +7,13 @@ public sealed class ApiKeyMiddleware(RequestDelegate next)
 {
     private const string ApiKeyHeader = "X-Api-Key";
 
-    private static readonly string[] ExcludedPrefixes = ["/applications", "/health", "/alive", "/swagger"];
+    private static readonly string[] ExcludedPrefixes = ["/applications", "/health", "/alive", "/scalar", "/openapi"];
 
     public async Task InvokeAsync(HttpContext context, IApplicationRepository repository, CurrentApplication currentApplication)
     {
         var path = context.Request.Path.Value ?? string.Empty;
 
-        if (ExcludedPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+        if (path == "/" || ExcludedPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
         {
             await next(context);
             return;
