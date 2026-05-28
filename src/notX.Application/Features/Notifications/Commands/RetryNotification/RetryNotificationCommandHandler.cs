@@ -1,7 +1,8 @@
+using System.Text.Json;
 using MediatR;
 using notX.Application.Interfaces;
 using notX.Application.Interfaces.Repositories;
-using notX.Domain.Enums;
+using notX.Domain.Entities;
 using notX.Shared.Results;
 
 namespace notX.Application.Features.Notifications.Commands.RetryNotification;
@@ -25,7 +26,17 @@ internal sealed class RetryNotificationCommandHandler(
 
         notification.Retry();
 
-        await repository.UpdateStatusAsync(notification.Id, NotificationStatus.Pending);
+        var outbox = new OutboxMessage(
+            "NotificationCreated",
+            JsonSerializer.Serialize(new
+            {
+                @event = "NotificationCreated",
+                notificationId = notification.Id,
+                type = notification.Type.ToString()
+            }),
+            scheduledAt: null);
+
+        await repository.RetryAsync(notification.Id, outbox);
 
         return Result.Success();
     }

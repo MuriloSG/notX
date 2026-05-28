@@ -11,6 +11,7 @@ public interface INotificationRepository
     Task InsertBatchAsync(IEnumerable<Notification> notifications, IEnumerable<OutboxMessage> outboxMessages);
     Task<Notification?> GetByIdAsync(Guid id);
     Task UpdateStatusAsync(Guid id, NotificationStatus status, DateTime? sentAt = null);
+    Task RetryAsync(Guid id, OutboxMessage outboxMessage);
     Task<(IEnumerable<Notification> Items, int TotalCount)> GetFilteredPagedAsync(NotificationFilter filter);
     Task<DashboardSnapshotDto> GetDashboardSnapshotAsync(Guid applicationId);
 }

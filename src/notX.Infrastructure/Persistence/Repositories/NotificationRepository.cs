@@ -10,24 +10,9 @@ using Npgsql;
 
 namespace notX.Infrastructure.Persistence.Repositories;
 
-internal sealed class NotificationRepository(IDbConnectionFactory connectionFactory)
+internal sealed partial class NotificationRepository(IDbConnectionFactory connectionFactory)
     : INotificationRepository
 {
-    private const string NotificationColumns = """
-        id, application_id AS ApplicationId, type, title, content, recipient,
-        status, created_at AS CreatedAt, scheduled_at AS ScheduledAt, sent_at AS SentAt
-        """;
-
-    private const string InsertNotificationSql = """
-        INSERT INTO notifications (id, application_id, type, title, content, recipient, status, created_at, scheduled_at, sent_at)
-        VALUES (@Id, @ApplicationId, @Type, @Title, @Content, @Recipient, @Status, @CreatedAt, @ScheduledAt, @SentAt)
-        """;
-
-    private const string InsertOutboxSql = """
-        INSERT INTO outbox_messages (id, type, payload, created_at, scheduled_at, retry_count)
-        VALUES (@Id, @Type, @Payload, @CreatedAt, @ScheduledAt, @RetryCount)
-        """;
-
     public async Task InsertAsync(Notification notification, OutboxMessage outboxMessage)
     {
         using var connection = (NpgsqlConnection)connectionFactory.CreateConnection();
@@ -56,20 +41,26 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
 
     public async Task<Notification?> GetByIdAsync(Guid id)
     {
-        var sql = $"SELECT {NotificationColumns} FROM notifications WHERE id = @Id";
-
         using var connection = connectionFactory.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<Notification>(sql, new { Id = id });
+        return await connection.QueryFirstOrDefaultAsync<Notification>(SqlGetById, new { Id = id });
     }
 
     public async Task UpdateStatusAsync(Guid id, NotificationStatus status, DateTime? sentAt = null)
     {
-        const string sql = """
-            UPDATE notifications SET status = @Status, sent_at = @SentAt WHERE id = @Id
-            """;
-
         using var connection = connectionFactory.CreateConnection();
-        await connection.ExecuteAsync(sql, new { Id = id, Status = status, SentAt = sentAt });
+        await connection.ExecuteAsync(SqlUpdateStatus, new { Id = id, Status = status, SentAt = sentAt });
+    }
+
+    public async Task RetryAsync(Guid id, OutboxMessage outboxMessage)
+    {
+        using var connection = (NpgsqlConnection)connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var transaction = await connection.BeginTransactionAsync();
+
+        await connection.ExecuteAsync(SqlRetryUpdate, new { Id = id, Status = (int)NotificationStatus.Pending }, transaction);
+        await connection.ExecuteAsync(InsertOutboxSql, ToOutboxParams(outboxMessage), transaction);
+
+        await transaction.CommitAsync();
     }
 
     public async Task<(IEnumerable<Notification> Items, int TotalCount)> GetFilteredPagedAsync(
@@ -134,32 +125,9 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
     public async Task<DashboardSnapshotDto> GetDashboardSnapshotAsync(Guid applicationId)
     {
         var since = DateTime.UtcNow.AddHours(-24);
-        var sql = $"""
-            SELECT status, COUNT(*) AS Count
-            FROM notifications
-            WHERE application_id = @ApplicationId
-            GROUP BY status;
-
-            SELECT type, COUNT(*) AS Count
-            FROM notifications
-            WHERE application_id = @ApplicationId
-            GROUP BY type;
-
-            SELECT date_trunc('hour', created_at) AS Hour, status, COUNT(*) AS Count
-            FROM notifications
-            WHERE application_id = @ApplicationId AND created_at >= @Since
-            GROUP BY Hour, status
-            ORDER BY Hour;
-
-            SELECT {NotificationColumns}
-            FROM notifications
-            WHERE application_id = @ApplicationId
-            ORDER BY created_at DESC
-            LIMIT 20;
-            """;
 
         using var connection = connectionFactory.CreateConnection();
-        using var multi = await connection.QueryMultipleAsync(sql, new { ApplicationId = applicationId, Since = since });
+        using var multi = await connection.QueryMultipleAsync(SqlDashboardSnapshot, new { ApplicationId = applicationId, Since = since });
 
         var statusRows = await multi.ReadAsync<(int Status, int Count)>();
         var typeRows = await multi.ReadAsync<(int Type, int Count)>();
