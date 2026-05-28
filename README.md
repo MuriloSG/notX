@@ -164,6 +164,28 @@ O `notX.AppHost` usa .NET Aspire para orquestração local. Com um único `dotne
 6. Worker publica "notification.status_changed" no Redis
    └── SSE → browser atualiza o dashboard em tempo real
 ```
+ 
+## Demonstração (screenshots)
+
+Abaixo estão capturas de tela representando as principais interfaces do projeto.
+
+- **Documentação da API (Interactive docs)** — [public/ft-1.png](public/ft-1.png)
+
+   ![Documentação da API](public/ft-1.png)
+
+   Exibe a documentação interativa gerada pelo Scalar/OpenAPI com exemplos de requisição para os endpoints de `/notifications`. Útil para desenvolvedores integrarem clientes HTTP rapidamente e testar fluxos com `X-Api-Key`.
+
+- **Dashboard em tempo real** — [public/ft-2.png](public/ft-2.png)
+
+   ![Dashboard](public/ft-2.png)
+
+   Painel principal do dashboard que mostra métricas (Total, Pendentes, Enviadas, Falhas), gráficos por hora e lista de notificações. As atualizações são empurradas em tempo real via SSE, permitindo acompanhar envios e falhas instantaneamente.
+
+- **Modal de criação de notificação** — [public/ft-3.png](public/ft-3.png)
+
+   ![Nova notificação](public/ft-3.png)
+
+   Interface para compor uma nova notificação (Email ou SMS) com editor rich-text, agendamento opcional e envio imediato. Reflete o payload esperado pelo endpoint `POST /notifications`.
 
 ---
 
