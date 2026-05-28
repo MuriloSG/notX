@@ -23,8 +23,8 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
         """;
 
     private const string InsertOutboxSql = """
-        INSERT INTO outbox_messages (id, type, payload, created_at, retry_count)
-        VALUES (@Id, @Type, @Payload, @CreatedAt, @RetryCount)
+        INSERT INTO outbox_messages (id, type, payload, created_at, scheduled_at, retry_count)
+        VALUES (@Id, @Type, @Payload, @CreatedAt, @ScheduledAt, @RetryCount)
         """;
 
     public async Task InsertAsync(Notification notification, OutboxMessage outboxMessage)
@@ -150,6 +150,7 @@ internal sealed class NotificationRepository(IDbConnectionFactory connectionFact
         o.Type,
         o.Payload,
         o.CreatedAt,
+        o.ScheduledAt,
         o.RetryCount
     };
 }
